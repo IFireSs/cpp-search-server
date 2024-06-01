@@ -1,6 +1,3 @@
-// Решите загадку: Сколько чисел от 1 до 1000 содержат как минимум одну цифру 3?
-// Напишите ответ здесь: 271
-
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -64,10 +61,10 @@ public:
 
     void AddDocument(int document_id, const string& document) {
         const vector<string> words = SplitIntoWordsNoStop(document);
-        double TF = 1.0 / words.size();
+        double word_freq = 1.0 / words.size();
         
         for (const string& word : words){
-            word_to_documents_freqs_[word][document_id] += TF;
+            word_to_documents_freqs_[word][document_id] += word_freq;
         }
         
         ++document_count_;
@@ -112,6 +109,9 @@ private:
         set<string> plus_words;
         set<string> minus_words;
     };
+    double CalculateIDF(const string& word) const {
+        return log(document_count_*1./word_to_documents_freqs_.at(word).size());
+    }
     
     Query ParseQuery(const string& text) const {
         Query query_words;
@@ -135,7 +135,8 @@ private:
 
         for (const string& word : query_words.plus_words) {
             if (word_to_documents_freqs_.count(word) != 0) {
-                double IDF = log(document_count_*1./word_to_documents_freqs_.at(word).size());
+                double IDF = CalculateIDF(word);
+                
                 for (auto& [document_id, TF] : word_to_documents_freqs_.at(word)) {
                     document_to_relevance[document_id] += (TF * IDF);
                 }
